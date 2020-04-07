@@ -1260,6 +1260,15 @@
   <data name="DoNotUseStackallocInLoopsMessage" xml:space="preserve">
     <value>Potential stack overflow. Move the stackalloc out of the loop.</value>
   </data>
+  <data name="PreferStreamAsyncMemoryOverloadsTitle" xml:space="preserve">
+    <value>PreferStreamAsyncMemoryOverloads title.</value>
+  </data>
+  <data name="PreferStreamAsyncMemoryOverloadsDescription" xml:space="preserve">
+    <value>PreferStreamAsyncMemoryOverloads description.</value>
+  </data>
+  <data name="PreferStreamAsyncMemoryOverloadsMessage" xml:space="preserve">
+    <value>PreferStreamAsyncMemoryOverloads message.</value>
+  </data>
   <data name="PreferTypedStringBuilderAppendOverloadsTitle" xml:space="preserve">
     <value>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</value>
   </data>

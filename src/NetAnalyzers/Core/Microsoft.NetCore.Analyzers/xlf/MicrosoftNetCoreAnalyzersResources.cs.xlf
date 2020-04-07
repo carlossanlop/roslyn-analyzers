@@ -1362,6 +1362,21 @@
         <target state="translated">Metody P/Invoke nemají být viditelné</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
+        <source>PreferStreamAsyncMemoryOverloads description.</source>
+        <target state="new">PreferStreamAsyncMemoryOverloads description.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
+        <source>PreferStreamAsyncMemoryOverloads message.</source>
+        <target state="new">PreferStreamAsyncMemoryOverloads message.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
+        <source>PreferStreamAsyncMemoryOverloads title.</source>
+        <target state="new">PreferStreamAsyncMemoryOverloads title.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
         <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
         <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</target>
