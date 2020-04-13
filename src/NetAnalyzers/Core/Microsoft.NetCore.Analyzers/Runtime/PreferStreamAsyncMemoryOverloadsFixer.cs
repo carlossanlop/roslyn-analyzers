@@ -2,32 +2,35 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
-    /// CA1834: summary
+    /// CA1834: TODO
     /// </summary>
-    [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class PreferStreamAsyncMemoryOverloadsFixer : CodeFixProvider
+    public class PreferStreamAsyncMemoryOverloadsFixer : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(PreferStreamAsyncMemoryOverloads.RuleId);
-
+        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(PreferStreamAsyncMemoryOverloads.RuleId);
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
-        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
+            if (!context.Diagnostics.Any())
+            {
+                return;
+            }
+
             Document doc = context.Document;
             SyntaxNode root = await doc.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
@@ -35,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 string title = MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsTitle;
 
-                var action = new CodeActionInternal(title,
+                var action = new MyCodeAction(title,
                     async ct => await ConvertToPreferredWriteAsync(doc, expression, ct).ConfigureAwait(false),
                     equivalenceKey: title);
 
@@ -43,37 +46,88 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private async Task<Document> ConvertToPreferredWriteAsync(Document document, SyntaxNode nodeToFix, CancellationToken cancellationToken)
+        // TODO: If the using System.Threading is not added yet, add it
+        // TODO: If the using System is not added yet, add it
+        private async Task<Document> ConvertToPreferredWriteAsync(Document originalDoc, SyntaxNode nodeToFix, CancellationToken ct)
         {
-            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            SemanticModel semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            SyntaxGenerator generator = editor.Generator;
+            SemanticModel semanticModel = await originalDoc.GetSemanticModelAsync(ct).ConfigureAwait(false);
+            Compilation compilation = semanticModel.Compilation;
 
-            if (semanticModel.GetOperation(nodeToFix, cancellationToken) is IInvocationOperation invocation &&
-                invocation.Arguments.Length > 0 &&
-                invocation.GetReceiverType(semanticModel.Compilation, beforeConversion: true, cancellationToken) is INamedTypeSymbol type)
+            if (!compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemoryExtensions, out INamedTypeSymbol? memoryExtensionsType) ||
+                memoryExtensionsType == null ||
+                !compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlyMemory1, out INamedTypeSymbol? readOnlyMemoryType) ||
+                readOnlyMemoryType == null ||
+                !compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingCancellationToken, out INamedTypeSymbol? cancellationTokenType) ||
+                cancellationTokenType == null)
             {
-                IMethodSymbol? replacement = type.GetMembers("WriteAsync").OfType<IMethodSymbol>().FirstOrDefault(x => x.Parameters.Length == 2);
-
-                if (replacement == null)
-                {
-                    return document;
-                }
-
-                
-
-                SyntaxNode nodeReplacement;
-
-                editor.ReplaceNode(nodeToFix, nodeReplacement.WithTriviaFrom(nodeToFix));
-                return editor.GetChangedDocument();
+                return originalDoc;
             }
 
-            return document;
+            DocumentEditor editor = await DocumentEditor.CreateAsync(originalDoc, ct).ConfigureAwait(false);
+            SyntaxGenerator generator = editor.Generator;
+
+            if (semanticModel.GetOperation(nodeToFix, ct) is IInvocationOperation invocation &&
+                invocation.Arguments.Length >= 3) // with or without cancellation token
+            {
+                if (invocation.Syntax is InvocationExpressionSyntax invocationExpressionSyntax &&
+                    invocationExpressionSyntax.Expression is MemberAccessExpressionSyntax memberAccessSyntax)
+                {
+                    SyntaxNode byteArrayNode = invocation.Arguments[0].Syntax.WithoutTrailingTrivia();
+
+                    var exp = generator.InvocationExpression()
+
+                    //SyntaxNode expression = generator.InvocationExpression(WellKnownTypeNames.SystemMemoryExtensions);
+                    //var byteArrayAccessNode = generator.MemberAccessExpression(byteArrayNode, "AsMemory") as ExpressionSyntax;
+
+                    //IMethodSymbol? ctDefaultConstructor = cancellationTokenType.Constructors.FirstOrDefault(x => x.GetParameters().Length == 0);
+
+                    //generator.MemberAccessExpression(cancellationTokenType, ctDefaultConstructor);
+
+                    //SyntaxNode ctNode = generator.InvocationExpression(memberAccessSyntax, byteArrayAccessNode);
+
+                    //editor.ReplaceNode(nodeToFix, ctNode.WithTriviaFrom(nodeToFix));
+                    //return editor.GetChangedDocument();
+                }
+                //var exp = generator.InvocationExpression(memberAccessSyntax, byteArrayAccessNode, ctNode);
+
+                //IdentifierNameSyntax identifierSyntax = (IdentifierNameSyntax)memberAccessSyntax.Expression;
+                //SyntaxToken identifierToken = identifierSyntax.Identifier;
+                //string identifierName = identifierToken.ValueText;
+                //IdentifierNameSyntax methodSyntax = (IdentifierNameSyntax)memberAccessSyntax.Name;
+                //SyntaxToken methodToken = methodSyntax.Identifier;
+
+
+
+                //char charValue = unitString[0];
+                //SyntaxNode charLiteralExpressionNode = generator.LiteralExpression(charValue);
+                //var charTypeNode = generator.TypeExpression(SpecialType.System_Char);
+                //var charSyntaxNode = generator.LocalDeclarationStatement(charTypeNode, currentSymbol.Name, charLiteralExpressionNode, isConst: true);
+                //var newRoot = generator.ReplaceNode(root, variableGroupDeclarationOperation.Syntax, charSyntaxNode);
+                //return doc.WithSyntaxRoot(newRoot);
+
+
+                //IArgumentOperation[] newArguments = new IArgumentOperation[] { };
+
+                //IMethodSymbol? preferredMethod = type.GetMembers("WriteAsync").OfType<IMethodSymbol>()
+                //    .FirstOrDefault(x => x.Parameters.Length == 2 &&
+                //    x.Parameters[0].Type.Equals(readOnlyMemoryType) &&
+                //    x.Parameters[1].Type.Equals(cancellationTokenType));
+
+                //if (preferredMethod != null)
+                //{
+                //    SyntaxNode nodeReplacement = generator.invo;
+
+                //    editor.ReplaceNode(nodeToFix, preferredMethod.WithTriviaFrom(nodeToFix));
+                //    return editor.GetChangedDocument();
+                //}
+            }
+
+            return originalDoc;
         }
 
-        private sealed class CodeActionInternal : DocumentChangeAction
+        private sealed class MyCodeAction : DocumentChangeAction
         {
-            public CodeActionInternal(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey) :
+            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey) :
                 base(title, createChangedDocument, equivalenceKey)
             {
             }

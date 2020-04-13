@@ -11,9 +11,9 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
-    /// CA1834: summary
+    /// CA1834: TODO
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class PreferStreamAsyncMemoryOverloads : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1834";
@@ -49,36 +49,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            context.RegisterOperationAction(
-                context =>
-                {
-                    if (context.Operation is IInvocationOperation invocation &&
-                        IsUndesiredStreamWriteAsyncMethod(invocation))
-                    {
-                        context.ReportDiagnostic(invocation.Syntax.CreateDiagnostic(PreferStreamAsyncMemoryOverloadsRule));
-                    }
-                },
-                OperationKind.Invocation);
+            context.RegisterOperationAction(OnCompilationStart, OperationKind.Invocation);
         }
 
-        private static bool IsUndesiredStreamWriteAsyncMethod(IInvocationOperation invocation)
+        private static void OnCompilationStart(OperationAnalysisContext context)
         {
-            return invocation.Arguments.Length > 0 &&
+            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOStream, out INamedTypeSymbol? streamSymbol) ||
+                streamSymbol == null)
+            {
+                return;
+            }
+
+            if (context.Operation is IInvocationOperation invocation &&
+                invocation.Arguments.Length > 0 &&
                 invocation.TargetMethod is IMethodSymbol method &&
-                IsStreamWriteAsyncMethod(method) &&
-                HasUndesiredArguments(method);
+                IsStreamWriteAsyncMethod(method, streamSymbol) &&
+                HasUndesiredArguments(method))
+            {
+                context.ReportDiagnostic(invocation.Syntax.CreateDiagnostic(PreferStreamAsyncMemoryOverloadsRule));
+            }
         }
 
-        private static bool IsStreamWriteAsyncMethod(IMethodSymbol method)
+        private static bool IsStreamWriteAsyncMethod(IMethodSymbol method, INamedTypeSymbol streamSymbol)
         {
-            return string.Equals(method.Name, "WriteAsync", StringComparison.Ordinal) &&
-                method.ContainingType.ToString() == WellKnownTypeNames.SystemIOStream;
+            return method.ContainingType.Equals(streamSymbol) &&
+                string.Equals(method.Name, "WriteAsync", StringComparison.Ordinal);
         }
 
         private static bool HasUndesiredArguments(IMethodSymbol method)
         {
-            return method.Parameters.Length == 3 &&
+            return method.Parameters.Length >= 3 && // with or without cancellation token
                 method.Parameters[0].Type.TypeKind == TypeKind.Array &&
+                method.Parameters[0].Type is IArrayTypeSymbol arrayTypeSymbol &&
+                arrayTypeSymbol.ElementType.SpecialType == SpecialType.System_Byte &&
                 method.Parameters[1].Type.SpecialType == SpecialType.System_Int32 &&
                 method.Parameters[2].Type.SpecialType == SpecialType.System_Int32;
         }

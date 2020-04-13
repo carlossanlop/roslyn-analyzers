@@ -27,9 +27,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region Diagnostic Tests
 
         [Fact]
-        public async Task Diagnostic()
+        public async Task DiagnosticAnalyzer()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyAnalyzerAsync50(@"
 using System.IO;
 class C
 {
@@ -45,10 +45,69 @@ class C
             ", GetCSharpResult(10, 19));
         }
 
+        [Fact]
+        public async Task DiagnosticFixer()
+        {
+            await VerifyCodeFixAsync50(@"
+using System.IO;
+class C
+{
+    async void M()
+    {
+        byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
+        using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
+        {
+            await [|fs.WriteAsync(buffer, 0, buffer.Length)|];
+        }
+    }
+}
+            ",
+            @"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    async void M()
+    {
+        byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
+        using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
+        {
+            await fs.WriteAsync(buffer.AsMemory(), new CancellationToken());
+        }
+    }
+}
+            ");
+        }
+
         #endregion
 
-
         #region Helpers
+
+        private static async Task VerifyAnalyzerAsync50(string source, params DiagnosticResult[] expected)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+            };
+
+            test.ExpectedDiagnostics.AddRange(expected);
+            await test.RunAsync();
+        }
+
+        private static Task VerifyCodeFixAsync50(string source, string corrected, params DiagnosticResult[] expected)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+                FixedCode = corrected,
+            };
+
+            test.ExpectedDiagnostics.AddRange(expected);
+            return test.RunAsync();
+        }
 
         private static DiagnosticResult GetCSharpResult(int line, int column)
             => VerifyCS.Diagnostic()

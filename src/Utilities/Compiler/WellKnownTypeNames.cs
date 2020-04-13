@@ -194,6 +194,7 @@ namespace Analyzer.Utilities
         public const string SystemLinqQueryable = "System.Linq.Queryable";
         public const string SystemMarshalByRefObject = "System.MarshalByRefObject";
         public const string SystemMemory = "System.Memory";
+        public const string SystemMemoryExtensions = "System.MemoryExtensions";
         public const string SystemNetHttpHttpClient = "System.Net.Http.HttpClient";
         public const string SystemNetHttpHttpClientHandler = "System.Net.Http.HttpClientHandler";
         public const string SystemNetHttpWinHttpHandler = "System.Net.Http.WinHttpHandler";
@@ -209,7 +210,7 @@ namespace Analyzer.Utilities
         public const string SystemObsoleteAttribute = "System.ObsoleteAttribute";
         public const string SystemOutOfMemoryException = "System.OutOfMemoryException";
         public const string SystemRandom = "System.Random";
-        public const string SystemReadOnlyMemory = "System.ReadOnlyMemory";
+        public const string SystemReadOnlyMemory1 = "System.ReadOnlyMemory`1";
         public const string SystemReflectionAssemblyFullName = "System.Reflection.Assembly";
         public const string SystemReflectionAssemblyVersionAttribute = "System.Reflection.AssemblyVersionAttribute";
         public const string SystemReflectionMemberInfo = "System.Reflection.MemberInfo";
