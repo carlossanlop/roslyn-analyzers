@@ -186,12 +186,15 @@ namespace Analyzer.Utilities
         public const string SystemIOFileStream = "System.IO.FileStream";
         public const string SystemIOLogLogStore = "System.IO.Log.LogStore";
         public const string SystemIOPath = "System.IO.Path";
+        public const string SystemIOStream = "System.IO.Stream";
         public const string SystemIOStringReader = "System.IO.StringReader";
         public const string SystemIOUnmanagedMemoryStream = "System.IO.UnmanagedMemoryStream";
         public const string SystemIProgress1 = "System.IProgress`1";
         public const string SystemLinqEnumerable = "System.Linq.Enumerable";
         public const string SystemLinqQueryable = "System.Linq.Queryable";
         public const string SystemMarshalByRefObject = "System.MarshalByRefObject";
+        public const string SystemMemory1 = "System.Memory`1";
+        public const string SystemMemoryExtensions = "System.MemoryExtensions";
         public const string SystemNetHttpHttpClient = "System.Net.Http.HttpClient";
         public const string SystemNetHttpHttpClientHandler = "System.Net.Http.HttpClientHandler";
         public const string SystemNetHttpWinHttpHandler = "System.Net.Http.WinHttpHandler";
@@ -207,6 +210,7 @@ namespace Analyzer.Utilities
         public const string SystemObsoleteAttribute = "System.ObsoleteAttribute";
         public const string SystemOutOfMemoryException = "System.OutOfMemoryException";
         public const string SystemRandom = "System.Random";
+        public const string SystemReadOnlyMemory1 = "System.ReadOnlyMemory`1";
         public const string SystemReflectionAssemblyFullName = "System.Reflection.Assembly";
         public const string SystemReflectionAssemblyVersionAttribute = "System.Reflection.AssemblyVersionAttribute";
         public const string SystemReflectionMemberInfo = "System.Reflection.MemberInfo";
