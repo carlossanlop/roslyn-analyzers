@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     {
         #region Helpers
 
-        protected static async Task VerifyAnalyzerAsync50(string source, params DiagnosticResult[] expected)
+        protected static async Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
         {
             var test = new VerifyCS.Test
             {
@@ -23,6 +23,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             test.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync();
+        }
+
+        protected static Task VerifyCodeFixAsync(string source, string corrected, params DiagnosticResult[] expected)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+                FixedCode = corrected,
+            };
+
+            test.ExpectedDiagnostics.AddRange(expected);
+            return test.RunAsync();
         }
 
         protected static DiagnosticResult GetCSharpResultBase(int line, int column, DiagnosticDescriptor rule)
