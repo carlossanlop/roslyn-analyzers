@@ -137,6 +137,21 @@
         <target state="translated">안전하지 않은 역직렬 변환기 BinaryFormatter를 사용하지 마세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CallAsyncMethodWhenSyncDescription">
+        <source>In a method which is already asynchronous, calls to other methods should be to their async versions, where they exist.</source>
+        <target state="new">In a method which is already asynchronous, calls to other methods should be to their async versions, where they exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallAsyncMethodWhenSyncMessage">
+        <source>Call the async method overload '{0}' instead of '{1}'</source>
+        <target state="new">Call the async method overload '{0}' instead of '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallAsyncMethodWhenSyncTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="new">Call async methods when in an async method</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
         <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</source>
         <target state="translated">Dispose를 구현하는 메서드가 GC.SuppressFinalize를 호출하지 않거나, Dispose를 구현하지 않는 메서드가 GC.SuppressFinalize를 호출하거나, 메서드가 GC.SuppressFinalize를 호출하고 다른 개체(Visual Basic의 경우 Me)를 전달합니다.</target>

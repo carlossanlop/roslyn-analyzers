@@ -1440,6 +1440,18 @@ Forward the 'CancellationToken' parameter to methods to ensure the operation can
 |CodeFix|True|
 ---
 
+## [CA2017](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017): Call async methods when in an async method
+
+In a method which is already asynchronous, calls to other methods should be to their async versions, where they exist.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2100](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.

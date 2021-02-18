@@ -124,6 +124,7 @@ CA2013 | Reliability | Warning | DoNotUseReferenceEqualsWithValueTypesAnalyzer, 
 CA2014 | Reliability | Warning | CSharpDoNotUseStackallocInLoopsAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2014)
 CA2015 | Reliability | Warning | DoNotDefineFinalizersForTypesDerivedFromMemoryManager, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2015)
 CA2016 | Reliability | Info | ForwardCancellationTokenToInvocationsAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016)
+CA2017 | Reliability | Info | Call async methods when in an async method, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017)
 CA2100 | Security | Disabled | ReviewSqlQueriesForSecurityVulnerabilities, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100)
 CA2101 | Globalization | Info | PInvokeDiagnosticAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2101)
 CA2109 | Security | Disabled | ReviewVisibleEventHandlersAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109)

@@ -1519,4 +1519,13 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="CallAsyncMethodWhenSyncDescription" xml:space="preserve">
+    <value>In a method which is already asynchronous, calls to other methods should be to their async versions, where they exist.</value>
+  </data>
+  <data name="CallAsyncMethodWhenSyncMessage" xml:space="preserve">
+    <value>Call the async method overload '{0}' instead of '{1}'</value>
+  </data>
+  <data name="CallAsyncMethodWhenSyncTitle" xml:space="preserve">
+    <value>Call async methods when in an async method</value>
+  </data>
 </root>
