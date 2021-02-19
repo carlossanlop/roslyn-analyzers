@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task TaskWaitInTaskReturningMethodGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -29,7 +29,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task T() {
@@ -38,24 +38,24 @@ class Test {
     }
 }
 ";
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithLocation(7, 11).WithArguments("Wait"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(6, 11, 6, 15).WithArguments("Wait"), fixedCode);
         }
 
         [Fact]
         public async Task TaskWaitInValueTaskReturningMethodGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     ValueTask T() {
         Task t = null;
-        t.{|#0:Wait|}();
+        t.Wait();
         return default;
     }
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async ValueTask T() {
@@ -64,13 +64,13 @@ class Test {
     }
 }
 ";
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithLocation(0).WithArguments("Wait"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(6, 11, 6, 15).WithArguments("Wait"), fixedCode);
         }
 
         [Fact]
         public async Task TaskWait_InIAsyncEnumerableAsyncMethod_ShouldReportWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,12 +78,12 @@ using System.Threading.Tasks;
 class Test {
     async IAsyncEnumerable<int> FooAsync()
     {
-        Task.Delay(TimeSpan.FromSeconds(5)).{|#0:Wait|}();
+        Task.Delay(TimeSpan.FromSeconds(5)).Wait();
         yield return 1;
     }
 }
 ";
-            var withFix = @"
+            var fixedCode = @"
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -96,12 +96,21 @@ class Test {
     }
 }
 ";
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithLocation(0).WithArguments("Wait"), withFix);
+            var test = new VerifyCS.Test
+            {
+                TestCode = originalCode,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                FixedCode = fixedCode
+            };
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(9, 45, 9, 49).WithArguments("Wait"));
+            await test.RunAsync();
         }
+
         [Fact]
         public async Task TaskOfTResultInTaskReturningMethodGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task<int> T() {
@@ -112,7 +121,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task<int> T() {
@@ -123,13 +132,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithLocation(7, 24).WithArguments("Result"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(6, 24, 6, 30).WithArguments("Result"), fixedCode);
         }
 
         [Fact]
         public async Task TaskOfTResultInTaskReturningMethodGeneratesWarning_FixPreservesCall()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -143,7 +152,7 @@ static class Assert {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task T() {
@@ -156,13 +165,13 @@ static class Assert {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithLocation(7, 26).WithArguments("Result"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(6, 26, 6, 32).WithArguments("Result"), fixedCode);
         }
 
         [Fact]
         public async Task TaskOfTResultInTaskReturningMethodGeneratesWarning_FixRewritesCorrectExpression()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -172,7 +181,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -182,13 +191,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithLocation(7, 45).WithArguments("Result"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(6, 45, 6, 51).WithArguments("Result"), fixedCode);
         }
 
         [Fact]
         public async Task TaskOfTResultInTaskReturningAnonymousMethodWithinSyncMethod_GeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -202,7 +211,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -216,13 +225,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, CreateDiagnostic(9, 28, 6, "Result"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(8, 28, 8, 34).WithArguments("Result"), fixedCode);
         }
 
         [Fact]
         public async Task TaskOfTResultInTaskReturningSimpleLambdaWithinSyncMethod_GeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -236,7 +245,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -250,13 +259,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(9, 28, 9, 34).WithArguments("Result"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(8, 28, 8, 34).WithArguments("Result"), fixedCode);
         }
 
         [Fact]
         public async Task TaskOfTResultInTaskReturningSimpleLambdaExpressionWithinSyncMethod_GeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -267,7 +276,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -278,13 +287,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(8, 57, 8, 63).WithArguments("Result"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(7, 57, 7, 63).WithArguments("Result"), fixedCode);
         }
 
         [Fact]
         public async Task TaskOfTResultInTaskReturningParentheticalLambdaWithinSyncMethod_GeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -298,7 +307,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -312,13 +321,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(9, 28, 9, 34).WithArguments("Result"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(8, 28, 8, 34).WithArguments("Result"), fixedCode);
         }
 
         [Fact]
         public async Task TaskOfTResultInTaskReturningMethodAnonymousDelegate_GeneratesNoWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -330,13 +339,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(test);
+            await VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
 
         [Fact]
         public async Task TaskGetAwaiterGetResultInTaskReturningMethodGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -347,7 +356,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task T() {
@@ -357,13 +366,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithLocation(7, 24).WithArguments("GetResult"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(6, 24, 6, 33).WithArguments("GetResult"), fixedCode);
         }
 
         [Fact]
         public async Task SyncInvocationWhereAsyncOptionExistsInSameTypeGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -375,7 +384,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task T() {
@@ -386,13 +395,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(Rule).WithSpan(6, 9, 6, 12).WithArguments("Foo", "FooAsync"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(Rule).WithSpan(6, 9, 6, 12).WithArguments("Foo", "FooAsync"), fixedCode);
         }
 
         [Fact]
         public async Task SyncInvocationWhereAsyncOptionIsObsolete_GeneratesNoWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -405,13 +414,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(test);
+            await VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
 
         [Fact]
         public async Task SyncInvocationWhereAsyncOptionIsPartlyObsolete_GeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -426,7 +435,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task T() {
@@ -440,13 +449,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(Rule).WithSpan(6, 9, 6, 12).WithArguments("Foo", "FooAsync"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(Rule).WithSpan(6, 9, 6, 12).WithArguments("Foo", "FooAsync"), fixedCode);
         }
 
         [Fact]
         public async Task SyncInvocationWhereAsyncOptionExistsInSubExpressionGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -458,7 +467,7 @@ class Test {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task T() {
@@ -469,13 +478,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(Rule).WithSpan(6, 17, 6, 20).WithArguments("Foo", "FooAsync"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(Rule).WithSpan(6, 17, 6, 20).WithArguments("Foo", "FooAsync"), fixedCode);
         }
 
         [Fact]
         public async Task SyncInvocationWhereAsyncOptionExistsInOtherTypeGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -489,7 +498,7 @@ class Util {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task T() {
@@ -502,13 +511,13 @@ class Util {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(Rule).WithSpan(6, 14, 6, 17).WithArguments("Foo", "FooAsync"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(Rule).WithSpan(6, 14, 6, 17).WithArguments("Foo", "FooAsync"), fixedCode);
         }
 
         [Fact]
         public async Task SyncInvocationWhereAsyncOptionExistsAsPrivateInOtherTypeGeneratesNoWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -522,13 +531,13 @@ class Util {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(test);
+            await VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
 
         [Fact]
         public async Task SyncInvocationWhereAsyncOptionExistsInOtherBaseTypeGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -545,7 +554,7 @@ class Apple : Fruit {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task T() {
@@ -561,13 +570,13 @@ class Apple : Fruit {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(Rule).WithSpan(7, 11, 7, 14).WithArguments("Foo", "FooAsync"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(Rule).WithSpan(7, 11, 7, 14).WithArguments("Foo", "FooAsync"), fixedCode);
         }
 
         [Fact]
         public async Task SyncInvocationWhereAsyncOptionExistsInExtensionMethodGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task T() {
@@ -584,7 +593,7 @@ static class FruitUtils {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 class Test {
     async Task T() {
@@ -600,13 +609,13 @@ static class FruitUtils {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(Rule).WithSpan(7, 11, 7, 14).WithArguments("Foo", "FooAsync"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(Rule).WithSpan(7, 11, 7, 14).WithArguments("Foo", "FooAsync"), fixedCode);
         }
 
         [Fact]
         public async Task SyncInvocationUsingStaticGeneratesWarning()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 using static FruitUtils;
 class Test {
@@ -621,7 +630,7 @@ static class FruitUtils {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 using static FruitUtils;
 class Test {
@@ -635,13 +644,13 @@ static class FruitUtils {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(Rule).WithSpan(7, 9, 7, 12).WithArguments("Foo", "FooAsync"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(Rule).WithSpan(7, 9, 7, 12).WithArguments("Foo", "FooAsync"), fixedCode);
         }
 
         [Fact]
         public async Task SyncInvocationUsingStaticGeneratesNoWarningAcrossTypes()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 using static FruitUtils;
 using static PlateUtils;
@@ -662,13 +671,13 @@ static class PlateUtils {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(test);
+            await VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
 
         [Fact]
         public async Task AwaitingAsyncMethodWithoutSuffixProducesNoWarningWhereSuffixVersionExists()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     Task Foo() => null;
@@ -679,7 +688,7 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(test);
+            await VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
 
         /// <summary>
@@ -692,7 +701,7 @@ class Test {
         [Fact]
         public async Task NoDiagnosticAndNoExceptionForProperties()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 class Test {
     string Foo => string.Empty;
@@ -700,13 +709,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(test);
+            await VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
 
         [Fact]
         public async Task GenericMethodName()
         {
-            var test = @"
+            var originalCode = @"
 using System.Threading.Tasks;
 using static FruitUtils;
 class Test {
@@ -721,7 +730,7 @@ static class FruitUtils {
 }
 ";
 
-            var withFix = @"
+            var fixedCode = @"
 using System.Threading.Tasks;
 using static FruitUtils;
 class Test {
@@ -735,13 +744,13 @@ static class FruitUtils {
 }
 ";
 
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(Rule).WithSpan(7, 9, 7, 17).WithArguments("Foo<int>", "FooAsync"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(Rule).WithSpan(7, 9, 7, 17).WithArguments("Foo<int>", "FooAsync"), fixedCode);
         }
 
         [Fact]
         public async Task AsyncAlternative_CodeFixRespectsTrivia()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -756,7 +765,7 @@ class Test {
     }
 }
 ";
-            var withFix = @"
+            var fixedCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -771,13 +780,13 @@ class Test {
     }
 }
 ";
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(Rule).WithSpan(15, 9, 15, 12).WithArguments("Foo", "FooAsync"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(Rule).WithSpan(15, 9, 15, 12).WithArguments("Foo", "FooAsync"), fixedCode);
         }
 
         [Fact]
         public async Task AwaitRatherThanWait_CodeFixRespectsTrivia()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -792,7 +801,7 @@ class Test {
     }
 }
 ";
-            var withFix = @"
+            var fixedCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -807,12 +816,12 @@ class Test {
     }
 }
 ";
-            await VerifyCS.VerifyCodeFixAsync(test, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(15, 34, 15, 38).WithArguments("Wait"), withFix);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(12, 34, 12, 38).WithArguments("Wait"), fixedCode);
         }
         [Fact]
         public async Task DoNotSuggestAsyncAlternativeWhenItIsSelf()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -829,13 +838,13 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(test);
+            await VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
 
         [Fact]
         public async Task DoNotSuggestAsyncAlternativeWhenItReturnsVoid()
         {
-            var test = @"
+            var originalCode = @"
 using System;
 using System.Threading.Tasks;
 class Test {
@@ -849,10 +858,7 @@ class Test {
 }
 ";
 
-            await VerifyCS.VerifyAnalyzerAsync(test);
+            await VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
-
-        private DiagnosticResult CreateDiagnostic(int line, int column, int length, string methodName)
-            => VerifyCS.Diagnostic(RuleNoAlternativeMethod).WithSpan(line, column, line, column + length).WithArguments(methodName);
     }
 }
