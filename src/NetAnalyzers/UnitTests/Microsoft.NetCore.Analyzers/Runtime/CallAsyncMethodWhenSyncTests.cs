@@ -3,11 +3,11 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.CallAsyncMethodWhenSyncAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpCallAsyncMethodWhenSyncAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpCallAsyncMethodWhenSyncFixer>;
 
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.CallAsyncMethodWhenSyncAnalyzer,
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicCallAsyncMethodWhenSyncAnalyzer,
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicCallAsyncMethodWhenSyncFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
