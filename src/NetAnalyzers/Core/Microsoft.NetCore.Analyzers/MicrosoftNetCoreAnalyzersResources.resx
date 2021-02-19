@@ -1523,9 +1523,12 @@
     <value>In a method which is already asynchronous, calls to other methods should be to their async versions, where they exist.</value>
   </data>
   <data name="CallAsyncMethodWhenSyncMessage" xml:space="preserve">
-    <value>Call the async method overload '{0}' instead of '{1}'</value>
+    <value>{0} synchronously blocks. Await {1} instead.</value>
   </data>
   <data name="CallAsyncMethodWhenSyncTitle" xml:space="preserve">
     <value>Call async methods when in an async method</value>
+  </data>
+  <data name="CallAsyncMethodWhenSyncMessageNoAlternativeMethod" xml:space="preserve">
+    <value>{0} synchronously blocks. Use await instead.</value>
   </data>
 </root>

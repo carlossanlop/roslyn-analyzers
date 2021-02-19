@@ -143,8 +143,13 @@
         <note />
       </trans-unit>
       <trans-unit id="CallAsyncMethodWhenSyncMessage">
-        <source>Call the async method overload '{0}' instead of '{1}'</source>
-        <target state="new">Call the async method overload '{0}' instead of '{1}'</target>
+        <source>{0} synchronously blocks. Await {1} instead.</source>
+        <target state="new">{0} synchronously blocks. Await {1} instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CallAsyncMethodWhenSyncMessageNoAlternativeMethod">
+        <source>{0} synchronously blocks. Use await instead.</source>
+        <target state="new">{0} synchronously blocks. Use await instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="CallAsyncMethodWhenSyncTitle">
